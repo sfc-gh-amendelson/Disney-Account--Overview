@@ -172,7 +172,7 @@ with st.spinner('Loading data from Snowflake...'):
         st.markdown("---")
         
         # Create line chart small multiples for each group
-        st.subheader("📈 Time Series - Annual RR by Group (Full Year Data)")
+        st.subheader("📈 Time Series - Daily Spend by Group (Full Year Data)")
         
         # Get top 10 groups by credit consumption from the 30-day data
         top10_data_collected = top10_data.collect()
@@ -189,7 +189,7 @@ with st.spinner('Loading data from Snowflake...'):
                 group_data = session.sql(f"""
                     SELECT 
                         usage_date,
-                        annual_rr_dollars
+                        total_credits * 1.68 AS daily_dollars
                     FROM TEMP.AMENDELSON.CORPORATE_RR
                     WHERE snowflake_group_rollup = '{escaped_group}'
                     AND usage_date >= CURRENT_DATE()-365
@@ -200,7 +200,7 @@ with st.spinner('Loading data from Snowflake...'):
                 if group_data:  # Only add if we have data
                     time_series_data[group] = {
                         'dates': [row["USAGE_DATE"] for row in group_data],
-                        'values': [row["ANNUAL_RR_DOLLARS"] for row in group_data]
+                        'values': [row["DAILY_DOLLARS"] for row in group_data]
                     }
         
         # Calculate subplot dimensions
@@ -235,7 +235,7 @@ with st.spinner('Loading data from Snowflake...'):
                             showlegend=False,
                             line=dict(width=2, color='steelblue'),
                             marker=dict(size=3),
-                            hovertemplate='<b>' + group + '</b><br>Date: %{x}<br>Revenue: $%{y:,.0f}<extra></extra>'
+                            hovertemplate='<b>' + group + '</b><br>Date: %{x}<br>Daily Spend: $%{y:,.0f}<extra></extra>'
                         ),
                         row=row, col=col
                     )
